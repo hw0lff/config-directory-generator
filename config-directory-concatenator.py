@@ -17,19 +17,20 @@ class DropInConfiguration:
         return self.runtime_dir / f"{self.runtime_file}"
 
     def generate_config_content(self) -> str:
-        files = (
-            root / file
-            for root, dirs, files in self.drop_in_dir.walk()
-            for file in files
-            if (root / file).is_file()
-        )
+        file_paths = []
+        for root, dirs, dir_files in self.drop_in_dir.walk():
+            dir_files = list(dir_files)
+            dir_files.sort()
+            for file in dir_files:
+                if (root / file).is_file():
+                    file_paths.append(root / file)
         if self.add_file_name_comment is not None:
             file_contents = (
                 self.add_file_name_comment + " " + f.name + "\n" + f.read_text()
-                for f in files
+                for f in file_paths
             )
         else:
-            file_contents = (f.read_text() for f in files)
+            file_contents = (f.read_text() for f in file_paths)
         config_content = "\n".join(file_contents)
         return config_content
 
